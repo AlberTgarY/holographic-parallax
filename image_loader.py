@@ -270,6 +270,7 @@ def gen_target_mask(target_amp, target_type, slm_mode, **opt):
 class TargetLoader(Dataset):
     def __init__(self, data_path, target_type, crop_to_roi=False, flipud=False, shuffle=False, target_save=False, target_load = False,**opt):
         self.data_path = data_path
+        print(f"---- target_type: {target_type}")
         if target_type == '2d':
             self.target_names = get_image_filenames(data_path)            
             # center view of lf dataset
@@ -284,6 +285,7 @@ class TargetLoader(Dataset):
 
         if target_type == '4d':
             self.target_names = get_lf_foldernames(data_path, opt['channel'])
+        print("target_names: ", self.target_names)
             
         # select only few data
         if opt['data_size'] is not None:
@@ -390,7 +392,8 @@ class TargetLoader(Dataset):
 
         total_num_lf_views = self.opt['total_num_lf_views']
         ang_res = self.opt['ang_res']
-
+        print("total_num_lf_views: ", total_num_lf_views)
+        print("ang_res: ", ang_res)
         target_pt_filename = os.path.join(folder_path,'Target_LF.pt')
 
         # load LF file saved as pt before
@@ -403,12 +406,14 @@ class TargetLoader(Dataset):
             print("Target light field loaded individually.")
             lfs = []
             for v_y in range(total_num_lf_views[0]):
-                for v_x in range(total_num_lf_views[1]):                
+                for v_x in range(total_num_lf_views[1]):      
+                    print(v_y, v_x)          
                     # file indexing
                     my, mx = v_y, v_x
 
                     # invert LF order
                     if self.opt['invert_lf'] is True:
+                        print("invert_lf")
                         my, mx = total_num_lf_views[0] - 1 - my, total_num_lf_views[1] - 1 - mx
 
                     # filename
@@ -427,7 +432,7 @@ class TargetLoader(Dataset):
 
             if self.flipud:
                 lf = lf.flip(dims=[-2])
-
+            
             lf = lf.unsqueeze(0) # shape of (N,1,H,W,U,V)
 
             # save loaded LF 

@@ -36,6 +36,7 @@ def holo2lf(input_field, n_fft=(9, 9), hop_length=(1, 1), win_func=None,
     :param impl: implementation ('conv', 'torch', 'olas')
     :return: A 4D representation of light field, shape of (N, 1, H, W, U, V)
     """
+    print("---- impl: ", impl)
     if impl == 'conv':
         return holo2lf_conv(input_field, predefined_h=predefined_h, hop_length=hop_length, h_size=h_size,
                             return_h=return_h, device=device)
@@ -68,14 +69,15 @@ def holo2lf(input_field, n_fft=(9, 9), hop_length=(1, 1), win_func=None,
             # 1) use STFT implementation of PyTorch
             if len(input_field.squeeze().shape) > 1:  # with 2D input
                 # input_field = input_field.view(-1, input_field.shape[-1])  # merge batch & y dimension
+                print("input_field: ", input_field.size())
                 input_field = input_field.reshape(np.prod(input_field.size()[:-1]), input_field.shape[-1])  # merge batch & y dimension
-
+                print("input_field reshape: ", input_field.size())
                 # take 1D stft along x dimension
                 stft_x = torch.stft(input_field, n_fft=n_fft_x, hop_length=hop_length[1], win_length=win_length_x,
                                     # onesided=False, window=torch.fft.ifftshift(win_func[win_length_y//2, :]), pad_mode='constant',
                                     onesided=False, window=win_func[win_length_y//2, :], pad_mode='constant',
                                     normalized=False, return_complex=True)
-
+                print("stft_x: ", stft_x.size(), type(stft_x))
                 if n_fft_y > 1:  # 4D light field output
                     stft_x = stft_x.reshape(batch_size, Ny, n_fft_x, Nx//hop_length[1]).permute(0, 3, 2, 1)
                     stft_x = stft_x.contiguous().view(-1, Ny)

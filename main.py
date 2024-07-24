@@ -168,7 +168,7 @@ def main():
     opt = p.parse_args()
     opt = params.set_configs(opt)
     dev = torch.device('cuda')
-
+    print("opt: ", opt)
     # tensorboard
     summary_name = f'{opt.qt_method}_{opt.bit_depth}'
     summaries_dir = os.path.join(opt.out_path, f'summaries/{summary_name}')
@@ -180,19 +180,23 @@ def main():
     algorithm = algorithms.load_alg(opt.cgh_method, opt.mem_eff)  # algorithm to optimize the slm patterns
     target_loader = image_loader.TargetLoader(**opt)  # target loader
     qt = quantization.qt_model(**opt)  # quantization
-
     for i, target in enumerate(target_loader):
+        print(i, len(target))
         if i > 0: break
         if isinstance(target, tuple):
             target_amp, target_mask = target
+            print(target_amp.size(), target_mask.size())
             target_amp = target_amp.to(dev)
             target_mask = target_mask.to(dev)
+            print(target_amp.size(), target_mask.size())
+
         else:
             target_amp = target.to(dev)
             target_mask = None
 
         # initial field
         init_phase = phase_init(i, **opt).to(dev)
+        print("init_phase: ", init_phase.size(), " ", opt.slm_mode)
         init_field = field_init(init_phase, opt.slm_mode)
 
         # gradient-descent based optimizer

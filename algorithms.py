@@ -26,6 +26,7 @@ import os
 from quantization import Quantizations, binarize
 
 def load_alg(alg_type, mem_eff=False):
+    print(alg_type, mem_eff)
     if 'sgd' in alg_type.lower():
         if mem_eff:
             algorithm = eff_gradient_descent
@@ -113,7 +114,9 @@ def gradient_descent(init_field, target_amp, target_mask=None, forward_prop=None
         if target_mask is not None:
             target_mask = utils.crop_image(target_mask, opt['roi_res'], stacked_complex=False, lf=lf_supervision)
             nonzeros = target_mask > 0
-
+    print("lf_supervision: ", lf_supervision)
+    print("time multiplex: ", opt['time_joint'])
+    print("citl: ", opt['citl'])
     for t in tqdm(range(opt['num_iters'])):
         optimizer.zero_grad()
 
@@ -130,7 +133,7 @@ def gradient_descent(init_field, target_amp, target_mask=None, forward_prop=None
 
         if forward_prop is not None:
             field = forward_prop(field)
-
+            
         field = utils.crop_image(field, opt['roi_res'], stacked_complex=False)
 
         if lf_supervision:
@@ -139,7 +142,7 @@ def gradient_descent(init_field, target_amp, target_mask=None, forward_prop=None
                                   win_type=opt['win_func'], beta=opt['beta'],).sqrt()
         else:
             recon_amp_t = field.abs()
-
+        print("recon_amp_t: ", recon_amp_t.size())
         if opt['time_joint']:  # time-multiplexed forward model
             recon_amp = (recon_amp_t**2).mean(dim=0, keepdims=True).sqrt()
         else:
@@ -156,7 +159,10 @@ def gradient_descent(init_field, target_amp, target_mask=None, forward_prop=None
             final_amp[nonzeros] += (recon_amp[nonzeros] * target_mask[nonzeros])
         else:
             final_amp = recon_amp
-
+            
+        print("target_amp: ", target_amp.size())
+        print("final_amp: ", final_amp.size())
+        
         with torch.no_grad():
             s = (final_amp * target_amp).mean() / \
                 (final_amp ** 2).mean()  # scale minimizing MSE btw recon and
