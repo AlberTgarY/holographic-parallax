@@ -117,7 +117,7 @@ def gradient_descent(init_field, target_amp, target_mask=None, forward_prop=None
     print("lf_supervision: ", lf_supervision)
     print("time multiplex: ", opt['time_joint'])
     print("citl: ", opt['citl'])
-    # opt['num_iters'] = 2
+    # opt['num_iters'] = 1
     for t in tqdm(range(opt['num_iters'])):
         optimizer.zero_grad()
 
@@ -169,17 +169,23 @@ def gradient_descent(init_field, target_amp, target_mask=None, forward_prop=None
             s = (final_amp * target_amp).mean() / \
                 (final_amp ** 2).mean()  # scale minimizing MSE btw recon and
             
-        for i in range(0, recon_amp.size(-2), 5):
-            for j in range(0, recon_amp.size(-1), 5):
-                recon = recon_amp[..., i, j]
+        # for i in range(0, recon_amp.size(-2), 1):
+        for i in [2, 4]:
+            for j in range(1, recon_amp.size(-1)-1, 2):
+                print(i,j)
+                recon = final_amp[..., i, j]
                 target = target_amp[..., i, j]
                 out_path = "/hy-tmp/holographic-parallax/results/4d/DragonBunny/1/9/ch_0"
-                odak.learn.tools.save_image(
-                            out_path + f"/recon{i}{j}.png", 
-                            recon, cmin = 0, cmax = 1.)
-                odak.learn.tools.save_image(
-                            out_path + f"/target{i}{j}.png", 
-                            target, cmin = 0, cmax = 1.)
+                if i == 4 and j == 5:
+                    odak.learn.tools.save_image(
+                                out_path + "/video" + f"/iter{t}.png", 
+                                recon, cmin = 0, cmax = recon.max())
+                # odak.learn.tools.save_image(
+                #             out_path + f"/recon{i}{j}.png", 
+                #             recon, cmin = 0, cmax = recon.max())
+                # odak.learn.tools.save_image(
+                #             out_path + f"/target{i}{j}.png", 
+                #             target, cmin = 0, cmax = 1.)
         loss_val = loss_fn(s * final_amp, target_amp)
         loss_val.backward()
         optimizer.step()
@@ -197,7 +203,8 @@ def gradient_descent(init_field, target_amp, target_mask=None, forward_prop=None
 
     # report best result
     print(f'-- Best loss: {best_loss.item()}')
-
+    utils.create_video_from_images("./results/4d/DragonBunny/1/9/ch_0/video/",  
+                                   "./results/4d/DragonBunny/1/9/ch_0/video.mp4")
     return {'loss_vals': loss_vals,
             'best_iter': best_iter,
             'best_loss': best_loss,

@@ -257,3 +257,31 @@ def get_psnr_ssim(recon_amp, target_amp, multichannel=False):
     ssims['srgb'] = ssim(target_srgb, recon_srgb, multichannel=multichannel)
 
     return psnrs, ssims
+
+import cv2
+import os
+import re
+def create_video_from_images(image_folder, output_video):
+    def sort_key(filename):
+        # Extract the number from the filename using regex
+        match = re.search(r'iter(\d+)\.png', filename)
+        if match:
+            return int(match.group(1))
+        return 0  # Return 0 if the filename doesn't match the expected pattern
+    print("Gen Video...")
+    images = [img for img in os.listdir(image_folder) if img.endswith(".png")]
+    images = sorted(images, key=sort_key)
+    print(images)
+    sample_img = cv2.imread(os.path.join(image_folder, images[0]))
+    height, width, layers = sample_img.shape
+
+    # Define the codec and create VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Be sure to use lower case
+    video = cv2.VideoWriter(output_video, fourcc, 30, (width, height))
+
+    for image in images:
+        img = cv2.imread(os.path.join(image_folder, image))
+        video.write(img)  # Add frame to the video
+
+    video.release()
+    print(f"Done {output_video}")
