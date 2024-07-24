@@ -14,7 +14,7 @@ A Flexible Framework for Holographic Near-eye Displays with Fast Heavily-quantiz
 S. Choi*, M. Gopakumar*, Y. Peng, J. Kim, Matthew O'Toole, G. Wetzstein.
 SIGGRAPH 2022
 """
-
+import odak
 import imageio
 import torch
 import torch.nn as nn
@@ -117,6 +117,7 @@ def gradient_descent(init_field, target_amp, target_mask=None, forward_prop=None
     print("lf_supervision: ", lf_supervision)
     print("time multiplex: ", opt['time_joint'])
     print("citl: ", opt['citl'])
+    # opt['num_iters'] = 2
     for t in tqdm(range(opt['num_iters'])):
         optimizer.zero_grad()
 
@@ -145,6 +146,7 @@ def gradient_descent(init_field, target_amp, target_mask=None, forward_prop=None
         print("recon_amp_t: ", recon_amp_t.size())
         if opt['time_joint']:  # time-multiplexed forward model
             recon_amp = (recon_amp_t**2).mean(dim=0, keepdims=True).sqrt()
+            print("recon_amp_t multiplexed: ", recon_amp.size())
         else:
             recon_amp = recon_amp_t
 
@@ -153,7 +155,7 @@ def gradient_descent(init_field, target_amp, target_mask=None, forward_prop=None
             captured_amp = utils.crop_image(captured_amp, opt['roi_res'],
                                             stacked_complex=False)
             recon_amp = recon_amp + captured_amp - recon_amp.detach()
-
+        print("target_mask: ", target_mask.size())
         if target_mask is not None:
             final_amp = torch.zeros_like(recon_amp)
             final_amp[nonzeros] += (recon_amp[nonzeros] * target_mask[nonzeros])
@@ -166,7 +168,18 @@ def gradient_descent(init_field, target_amp, target_mask=None, forward_prop=None
         with torch.no_grad():
             s = (final_amp * target_amp).mean() / \
                 (final_amp ** 2).mean()  # scale minimizing MSE btw recon and
-
+            
+        for i in range(0, recon_amp.size(-2), 5):
+            for j in range(0, recon_amp.size(-1), 5):
+                recon = recon_amp[..., i, j]
+                target = target_amp[..., i, j]
+                out_path = "/hy-tmp/holographic-parallax/results/4d/DragonBunny/1/9/ch_0"
+                odak.learn.tools.save_image(
+                            out_path + f"/recon{i}{j}.png", 
+                            recon, cmin = 0, cmax = 1.)
+                odak.learn.tools.save_image(
+                            out_path + f"/target{i}{j}.png", 
+                            target, cmin = 0, cmax = 1.)
         loss_val = loss_fn(s * final_amp, target_amp)
         loss_val.backward()
         optimizer.step()
@@ -218,7 +231,7 @@ def eff_gradient_descent(init_field, target_amp, target_mask=None, forward_prop=
         if target_mask is not None:
             target_mask = utils.crop_image(target_mask, opt['roi_res'], stacked_complex=False, lf=lf_supervision)
             nonzeros = target_mask > 0
-
+    
     for t in tqdm(range(opt['num_iters'])):
         optimizer.zero_grad()
 

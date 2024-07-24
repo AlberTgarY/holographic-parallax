@@ -65,11 +65,12 @@ def visualize_and_save(batch_idx, results, target_mask, opt):
     if opt.is_perspective ==True:
         print(f'-- Saving to {opt.out_path}')
         print(f'-- Saving perspective view for channel: {opt.channel}, pupil pos: ({opt.pupil_pos[0]:.2f},{opt.pupil_pos[1]:.2f}), rad: {opt.pupil_rad:.2f}')
-        
+    
     
     final_field = results['recon_field']
     final_slm = results['final_phase']
-
+    print("---- final_field: ", final_field.size(), final_field.dtype)
+    print("---- final_slm: ", final_slm.size(), final_slm.dtype)
     # lightfield
     if opt.target_type == '4d':
         # recon lf
@@ -85,7 +86,9 @@ def visualize_and_save(batch_idx, results, target_mask, opt):
         target_mask[...,  :, 0:10, :,:] = 0
         target_mask[...,  :,-10:, :,:] = 0
         target_mask = utils.switch_lf(target_mask, 'whole')
+        print("target_mask afterswitch: ", target_mask.size())
         target_mask = resize_tensor(target_mask, opt.roi_res)
+        print("target_mask resize: ", target_mask.size())
         imsave_tensor(os.path.join(opt.out_path, f'{batch_idx}_lf_mask.png'), target_mask)
 
     # captured amplitude
@@ -105,6 +108,7 @@ def visualize_and_save(batch_idx, results, target_mask, opt):
         imsave_tensor(os.path.join(opt.out_path, f'{batch_idx}_recon_reference_{d}.png'), recon_amp)
         
         # save leftmost perspective view
+        print(f"pupil_pos={opt.pupil_pos}, pupil_rad={opt.pupil_rad}, aperture={opt.aperture}")
         perspective, pupil_mask = prop_models.view_from_pupil(single_field, pupil_pos=opt.pupil_pos, pupil_rad=opt.pupil_rad, aperture=opt.aperture)
         perspective = (perspective.abs() ** 2).mean(dim=0, keepdims=True).sqrt()
         pupil_mask = resize_tensor(pupil_mask.unsqueeze(0), [min(*pupil_mask.shape[-2:])]*2) # resize to square
@@ -198,13 +202,12 @@ def main():
         init_phase = phase_init(i, **opt).to(dev)
         print("init_phase: ", init_phase.size(), " ", opt.slm_mode)
         init_field = field_init(init_phase, opt.slm_mode)
-
         # gradient-descent based optimizer
         results = algorithm(init_field, target_amp, target_mask, 
                             forward_prop=forward_prop,
                             camera_prop=camera_prop, 
                             qt=qt, tb_writer=writer, **opt)
-
+        
         # TODO: Lint below into a few lines (i.e. def visualize(final_field))
         visualize_and_save(i, results, target_mask, opt)
 

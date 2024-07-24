@@ -8,7 +8,6 @@ This code and data is released under the Creative Commons Attribution-NonCommerc
     # The material is provided as-is, with no warranties whatsoever.
     # If you publish any code, data, or scientific work based on this, please cite our work.
 
-Technical Paper:
 Time-multiplexed Neural Holography:
 A Flexible Framework for Holographic Near-eye Displays with Fast Heavily-quantized Spatial Light Modulators
 S. Choi*, M. Gopakumar*, Y. Peng, J. Kim, Matthew O'Toole, G. Wetzstein.
@@ -77,21 +76,23 @@ def holo2lf(input_field, n_fft=(9, 9), hop_length=(1, 1), win_func=None,
                                     # onesided=False, window=torch.fft.ifftshift(win_func[win_length_y//2, :]), pad_mode='constant',
                                     onesided=False, window=win_func[win_length_y//2, :], pad_mode='constant',
                                     normalized=False, return_complex=True)
-                print("stft_x: ", stft_x.size(), type(stft_x))
+                print("stft_x: ", stft_x.size(), stft_x.dtype)
                 if n_fft_y > 1:  # 4D light field output
                     stft_x = stft_x.reshape(batch_size, Ny, n_fft_x, Nx//hop_length[1]).permute(0, 3, 2, 1)
                     stft_x = stft_x.contiguous().view(-1, Ny)
-
+                    print("stft_x after: ", stft_x.size())
                     # take one more 1D stft along y dimension
                     stft_xy = torch.stft(stft_x, n_fft=n_fft_y, hop_length=hop_length[0], win_length=win_length_y,
                                         #  onesided=False, window=torch.fft.ifftshift(win_func[:, win_length_x//2]), pad_mode='constant',
                                          onesided=False, window=win_func[:, win_length_x//2], pad_mode='constant',
                                          normalized=False, return_complex=True)
-
+                    print("stft_xy: ", stft_xy.size())
                     # reshape tensor to (N, 1, Y, X, fy, fx)
                     stft_xy = stft_xy.reshape(batch_size, Nx//hop_length[1], n_fft[1], n_fft[0], Ny//hop_length[0])
                     stft_xy = stft_xy.unsqueeze(1).permute(0, 1, 5, 2, 4, 3)
+                    print("stft_xy after: ", stft_xy.size())
                     freq_space_rep = torch.fft.fftshift(stft_xy, (-2, -1))
+                    print("freq_space_rep: ", freq_space_rep.size())
 
                 else:  # 3D light field output
                     stft_xy = stft_x.reshape(batch_size, Ny, n_fft_x, Nx//hop_length[1]).permute(0, 1, 3, 2)

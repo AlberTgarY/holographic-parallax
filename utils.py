@@ -178,6 +178,7 @@ def srgb_lin2gamma(im_in):
 def switch_lf(input, mode='elemental'):
     spatial_res = input.shape[2:4]
     angular_res = input.shape[-2:]
+    print("spatial_res: ", spatial_res, " angular_res: ", angular_res)
     if mode == 'elemental':
         lf = input.permute(0, 1, 2, 4, 3, 5)
     elif mode == 'whole':

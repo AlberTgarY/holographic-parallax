@@ -257,7 +257,7 @@ def compute_eyebox(input_field, resize=True):
     return eyebox
 
 
-def view_from_pupil(input_field, pupil_pos=(0,0), pupil_rad=0.5,aperture=1.0):
+def view_from_pupil(input_field, pupil_pos=(0,0), pupil_rad=0.5, aperture=1.0):
     """
     Simulate perspective view by cropping pupil from eyebox
     NOTE: Fourier plane is shifted to center the pupil

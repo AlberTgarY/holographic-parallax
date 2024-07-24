@@ -1,5 +1,5 @@
-data_path = ./data/lf_dataset/DragonBunny/ch_2
-out_path = ./data/lf_fs_dataset/DragonBunny/ch_2
+data_path = ./data/lf_dataset/DragonBunny/ch_0
+out_path = ./data/lf_fs_dataset/DragonBunny/ch_0
 
 channel = 2
 target_type  = 4d
