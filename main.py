@@ -61,7 +61,7 @@ def save_torch_pt(path, image):
 
 
 def visualize_and_save(batch_idx, results, target_mask, opt):
-
+    print("--------------------------------------------------------")
     if opt.is_perspective ==True:
         print(f'-- Saving to {opt.out_path}')
         print(f'-- Saving perspective view for channel: {opt.channel}, pupil pos: ({opt.pupil_pos[0]:.2f},{opt.pupil_pos[1]:.2f}), rad: {opt.pupil_rad:.2f}')
@@ -129,6 +129,7 @@ def visualize_and_save(batch_idx, results, target_mask, opt):
     eyebox = (eyebox - eyebox.min()) / (torch.flatten(eyebox).sort()[0][-1000] - eyebox.min()) # normalize, ignore peak
     eyebox = torch.clip(eyebox, 0, 1)
     imsave_tensor(os.path.join(opt.out_path, f'{batch_idx}_eyebox.png'), eyebox)            
+    print("--------------------------------------------------------")
 
 
 
@@ -145,6 +146,7 @@ def field_init(init_phase, slm_mode, **opt):
 
 def phase_init(batch_idx, is_recon, **opt):
     # load optimized slm from path
+    print("opt['num_frames']: ", opt['num_frames'])
     if is_recon:
         # number of 8bit images to read
         n_slm = 1 if opt['num_frames'] < 8 else opt['num_frames'] // 8
@@ -172,7 +174,9 @@ def main():
     opt = p.parse_args()
     opt = params.set_configs(opt)
     dev = torch.device('cuda')
+    opt['prop_dists'] = [0.12]
     print("opt: ", opt)
+    
     # tensorboard
     summary_name = f'{opt.qt_method}_{opt.bit_depth}'
     summaries_dir = os.path.join(opt.out_path, f'summaries/{summary_name}')

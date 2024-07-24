@@ -6,7 +6,7 @@ for v in 9
 do
 if [ \( "$f" -eq 16 -a "$v" -eq 7 \) -o \( "$f" -eq 16 -a "$v" -eq 9 \) -o \( "$f" -eq 24 -a "$v" -eq 7 \) -o \( "$f" -eq 24 -a "$v" -eq 9 \) ]
 then 
-    for ch in #0 1 2
+    for ch in 0 # 1 2
     do 
         python main.py \
         --channel $ch \
@@ -21,7 +21,7 @@ then
         --mem_eff True  
     done
 else
-    for ch in 0 1 2
+    for ch in 0 # 1 2
     do 
         python main.py \
         --channel $ch \

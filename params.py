@@ -100,7 +100,7 @@ def add_parameters(p, mode='train'):
     p.add_argument('--is_perspective', type=str2bool, default=False, help='If True, generate focal stack with perspective')
     p.add_argument('--is_recon', type=str2bool, default=False, help='If True, reconstruct focal stack')
     p.add_argument('--slm_path', type=str, default='./slm', help='Directory of optimized slm used for reconstruction')
-    p.add_argument('--pupil_pos', type=str2float_tuple, default=(0, -0.5), help='pupil center position normalized with eyebox size')
+    p.add_argument('--pupil_pos', type=str2float_tuple, default=(0, 0.5), help='pupil center position normalized with eyebox size')
     p.add_argument('--pupil_rad', type=float, default=0.5, help='pupil radius size normalized with eyebox size')
     p.add_argument('--ref_path', type =str, default='./data/lf_fs_dataset', help = 'light field focal stack reference directory')
     p.add_argument('--pupil_path', type=str, default='./data/pupil_trajectory', help = 'pupil trajectory (x,y,pd,t) directory')
