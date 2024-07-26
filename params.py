@@ -259,7 +259,7 @@ def add_params_forward_prop(model_type, opt):
                                                         depthmap_dists_range=opt.depthmap_dists_range,
                                                         eyepiece=opt.eyepiece,
                                                         prop_dists=opt.prop_dists)
-    
+    print("mp_dists: ", mp_dists)
     # used for propagation in 3D and 2.5D supervision
     if opt.target_type in ('3d', '2.5d'):
         opt.prop_dists = mp_dists

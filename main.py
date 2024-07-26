@@ -69,11 +69,12 @@ def visualize_and_save(batch_idx, results, target_mask, opt):
     
     final_field = results['recon_field']
     final_slm = results['final_phase']
-    print("---- final_field: ", final_field.size(), final_field.dtype)
+
     print("---- final_slm: ", final_slm.size(), final_slm.dtype)
     # lightfield
     if opt.target_type == '4d':
         # recon lf
+        print("---- final_field: ", final_field.size(), final_field.dtype)
         final_amp = get_lf(final_field, **opt)
         lf = utils.switch_lf(final_amp, 'whole')
         lf = resize_tensor(lf, opt.roi_res) # resize before save
@@ -102,6 +103,7 @@ def visualize_and_save(batch_idx, results, target_mask, opt):
     D = final_field.shape[1]
     for d in range(D):
         single_field = final_field[:, d:d+1, :, :]
+        print("single_field: ", single_field.size(), single_field.dtype)
         # recon amp at reference plane
         recon_amp = (single_field.abs() ** 2).mean(dim=0, keepdims=False).sqrt()
         save_torch_pt(os.path.join(opt.out_path, f'{batch_idx}_recon_reference_{d}.pt'), recon_amp)
@@ -174,7 +176,9 @@ def main():
     opt = p.parse_args()
     opt = params.set_configs(opt)
     dev = torch.device('cuda')
-    opt['prop_dists'] = [0.12]
+    opt['prop_dists'] = [0.05]
+    opt['num_frames'] = 2
+    
     print("opt: ", opt)
     
     # tensorboard

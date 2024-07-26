@@ -133,6 +133,7 @@ def gradient_descent(init_field, target_amp, target_mask=None, forward_prop=None
             field = qt_field * torch.exp(1j * torch.zeros_like(qt_field))  # amp mode
 
         if forward_prop is not None:
+            print("forward_prop")
             field = forward_prop(field)
             
         field = utils.crop_image(field, opt['roi_res'], stacked_complex=False)

@@ -52,6 +52,7 @@ class prop_sideband(torch.nn.Module):
         field = self.ASM(field)
 
         if (self.stoch_pupil and not full_recon) or self.opt['is_perspective']:
+            print("pupil aware")
             field = self.pupil_aware(field, min_pupil_size=self.opt['min_pupil_size'],
                                             max_pupil_size=self.opt['max_pupil_size'],
                                             pupil_range=self.opt['pupil_range'])
